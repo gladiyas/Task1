@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Professional portfolio of Gladiyas Asin showcasing web development skills, projects, and accessible design.">
+    <meta name="keywords"
+        content="Gladiyas Asin, portfolio, HTML5, CSS, Java, Python, web developer">
+    <meta name="author" content="Gladiyas Asin">
+    <meta name="robots" content="index, follow">
+    <title>Gladiyas Asin | Developer Portfolio</title>
+    <style>
+
+        /* =========================
+           ROOT VARIABLES
+        ========================== */
+
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #1a1a1a;
+            --primary-color: #005a9c;
+            --card-bg: #f8f9fa;
+            --border-color: #d1d5db;
+            --focus-outline: #ffbf47;
+            --max-width: 1100px;
+        }
+
+
+        /* =========================
+           DARK MODE
+        ========================== */
+
+        @media (prefers-color-scheme: dark) {
+
+            :root {
+                --bg-color: #121212;
+                --text-color: #f3f4f6;
+                --primary-color: #4ba3e3;
+                --card-bg: #1e1e1e;
+                --border-color: #374151;
+            }
+        }
+
+
+        /* =========================
+           RESET
+        ========================== */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family:
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+
+        /* =========================
+           HEADINGS RESET
+        ========================== */
+
+        header h1,
+        #about h2 {
+            margin: 0;
+            padding: 0;
+        }
+
+
+        /* =========================
+           KEYBOARD FOCUS
+        ========================== */
+
+        *:focus-visible {
+            outline: 4px solid var(--focus-outline);
+            outline-offset: 2px;
+        }
+
+
+        /* =========================
+           SKIP LINK
+        ========================== */
+
+        .skip-link {
+            position: absolute;
+            top: -100px;
+            left: 0;
+
+            background-color: var(--primary-color);
+            color: white;
+
+            padding: 1rem;
+
+            z-index: 100;
+
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+
+        /* =========================
+           HEADER
+        ========================== */
+
+        header {
+            max-width: var(--max-width);
+            margin: auto;
+
+            padding: 2rem 1.5rem;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            flex-wrap: wrap;
+            gap: 1.5rem;
+
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 2.2rem;
+        }
+
+
+        /* =========================
+           NAVIGATION
+        ========================== */
+
+        nav ul {
+            display: flex;
+
+            list-style: none;
+
+            gap: 2rem;
+        }
+
+        nav a {
+            color: var(--primary-color);
+
+            text-decoration: none;
+
+            font-weight: 600;
+
+            font-size: 1.05rem;
+
+            padding: 0.25rem 0;
+
+            border-bottom: 2px solid transparent;
+        }
+
+        nav a:hover,
+        nav a:focus {
+            border-bottom-color: var(--primary-color);
+        }
+
+
+        /* =========================
+           MAIN
+        ========================== */
+
+        main {
+            max-width: var(--max-width);
+
+            margin: auto;
+
+            padding: 3rem 1.5rem;
+        }
+
+
+        article,
+        section {
+            margin-bottom: 3.5rem;
+        }
+
+
+        h2 {
+            font-size: 1.8rem;
+
+            margin-bottom: 1.5rem;
+
+            color: var(--primary-color);
+        }
+
+
+        h3 {
+            font-size: 1.4rem;
+
+            margin-bottom: 0.75rem;
+        }
+
+
+        p {
+            margin-bottom: 1rem;
+
+            font-size: 1.1rem;
+        }
+
+
+        /* =========================
+           ABOUT
+        ========================== */
+
+        .about-content {
+            max-width: 800px;
+        }
+
+        aside {
+            background-color: var(--card-bg);
+
+            border-left: 4px solid var(--primary-color);
+
+            padding: 1.25rem;
+
+            margin-top: 1.5rem;
+
+            border-radius: 4px;
+        }
+
+        details summary {
+            font-weight: bold;
+
+            cursor: pointer;
+
+            padding: 0.25rem;
+        }
+
+
+        /* =========================
+           PROJECTS
+        ========================== */
+
+        .project-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(auto-fit, minmax(280px, 1fr));
+
+            gap: 2rem;
+
+            margin-top: 1.5rem;
+        }
+
+        .project-card {
+            background-color: var(--card-bg);
+
+            border: 1px solid var(--border-color);
+
+            padding: 1.5rem;
+
+            border-radius: 8px;
+
+            margin-bottom: 0;
+
+            transition: transform 0.2s ease,
+                        box-shadow 0.2s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+
+            box-shadow:
+                0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+
+        /* =========================
+           CONTACT FORM
+        ========================== */
+
+        form {
+            max-width: 600px;
+
+            background-color: var(--card-bg);
+
+            padding: 2rem;
+
+            border-radius: 8px;
+
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+
+            font-weight: 600;
+
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+
+            padding: 0.75rem;
+
+            border: 2px solid var(--border-color);
+
+            border-radius: 4px;
+
+            background-color: var(--bg-color);
+
+            color: var(--text-color);
+
+            font-family: inherit;
+
+            font-size: 1rem;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: var(--primary-color);
+        }
+
+        button[type="submit"] {
+            background-color: var(--primary-color);
+
+            color: white;
+
+            border: none;
+
+            padding: 0.75rem 2rem;
+
+            font-size: 1rem;
+
+            font-weight: bold;
+
+            border-radius: 4px;
+
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            opacity: 0.9;
+        }
+
+
+        /* =========================
+           FOOTER
+        ========================== */
+
+        footer {
+            max-width: var(--max-width);
+
+            margin: auto;
+
+            padding: 2rem 1.5rem;
+
+            border-top: 2px solid var(--border-color);
+
+            text-align: center;
+
+            font-size: 0.95rem;
+        }
+
+
+        /* =========================
+           RESPONSIVE
+        ========================== */
+
+        @media (max-width: 700px) {
+
+            header {
+                flex-direction: column;
+
+                align-items: flex-start;
+            }
+
+            nav ul {
+                flex-wrap: wrap;
+
+                gap: 1rem;
+            }
+
+            header h1 {
+                font-size: 1.9rem;
+            }
+
+            main {
+                padding: 2rem 1rem;
+            }
+
+            h2 {
+                font-size: 1.6rem;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+    <!-- Skip Navigation -->
+    <a href="#main-content" class="skip-link">
+        Skip to Main Content
+    </a>
+
+
+    <!-- Header -->
+    <header>
+
+        <h1>Gladiyas Asin</h1>
+
+        <nav aria-label="Primary Navigation">
+
+            <ul>
+
+                <li>
+                    <a href="#about">About</a>
+                </li>
+
+                <li>
+                    <a href="#projects">Projects</a>
+                </li>
+
+                <li>
+                    <a href="#contact">Contact</a>
+                </li>
+
+            </ul>
+
+        </nav>
+
+    </header>
+
+
+    <!-- Main Content -->
+    <main id="main-content">
+
+
+        <!-- About Me -->
+        <article id="about">
+
+            <h2>About Me</h2>
+
+            <div class="about-content">
+
+                <p>
+                    Hi, I'm Gladiyas Asin, a Computer Science Engineering
+                    student passionate about software development and
+                    web technologies.
+                </p>
+
+                <p>
+                    I enjoy learning Java, Python, HTML, CSS, JavaScript,
+                    and MySQL and building simple, user-friendly
+                    applications.
+                </p>
+
+                <p>
+                    My goal is to become a skilled Full Stack Developer
+                    and create useful real-world applications.
+                </p>
+
+            </div>
+
+
+            <aside>
+
+                <details>
+
+                    <summary>
+                        My Interests
+                    </summary>
+
+                    <p>
+                        Web development, Java programming, Python,
+                        database management, responsive design,
+                        and accessibility.
+                    </p>
+
+                </details>
+
+            </aside>
+
+        </article>
+
+
+        <!-- Projects -->
+        <article id="projects">
+
+            <h2>Featured Projects</h2>
+
+            <div class="project-grid">
+
+
+                <section class="project-card">
+
+                    <h3>
+                        Event Management System
+                    </h3>
+
+                    <p>
+                        A responsive website created using HTML and CSS
+                        for displaying and managing event information.
+                    </p>
+
+                </section>
+
+
+                <section class="project-card">
+
+                    <h3>
+                        Employee Management System
+                    </h3>
+
+                    <p>
+                        A Java and MySQL application for managing
+                        employee information.
+                    </p>
+
+                </section>
+
+
+                <section class="project-card">
+
+                    <h3>
+                        NLP Keyword Extractor
+                    </h3>
+
+                    <p>
+                        A simple NLP project that extracts important
+                        keywords from sentences and paragraphs.
+                    </p>
+
+                </section>
+
+            </div>
+
+        </article>
+
+
+        <!-- Contact -->
+        <section id="contact">
+
+            <h2>Get In Touch</h2>
+
+            <p>
+                Have a project idea or want to connect?
+                Send me a message.
+            </p>
+
+
+            <form
+                action="#"
+                method="POST"
+                aria-label="Contact Form">
+
+
+                <div class="form-group">
+
+                    <label for="username">
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        autocomplete="name"
+                        required
+                        aria-required="true">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="useremail">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="useremail"
+                        name="useremail"
+                        autocomplete="email"
+                        required
+                        aria-required="true">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="usermessage">
+                        Message
+                    </label>
+
+                    <textarea
+                        id="usermessage"
+                        name="usermessage"
+                        rows="5"
+                        required
+                        aria-required="true"></textarea>
+
+                </div>
+
+
+                <button type="submit">
+                    Send Message
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+
+    <!-- Footer -->
+    <footer>
+
+        <p>
+            &copy;
+            <time datetime="2026">2026</time>
+            Gladiyas Asin.
+            Built using semantic HTML5 and accessible design.
+        </p>
+
+    </footer>
+</body>
+</html>
