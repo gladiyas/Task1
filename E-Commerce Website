@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Storefront — Minimal Modern Commerce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            aura: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              900: '#14532d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbar and backdrop refinements */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .cart-drawer-transition {
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    }
+    .badge-pop {
+      animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes pop {
+      0% { transform: scale(0.6); }
+      70% { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
+    .toast-slide {
+      animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(16px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4 py-3">
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-2 tracking-tight group">
+        <div class="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white font-bold text-lg shadow-sm group-hover:bg-indigo-600 transition">
+          A
+        </div>
+        <span class="text-xl font-extrabold text-slate-900">AURA<span class="text-indigo-600">.</span></span>
+      </a>
+
+      <!-- Quick Search Bar -->
+      <div class="flex-1 max-w-md hidden sm:block relative">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input
+          id="desktopSearchInput"
+          type="search"
+          placeholder="Search products, materials, categories..."
+          class="w-full pl-10 pr-4 py-2 text-sm bg-slate-100 rounded-full border border-transparent focus:border-indigo-500 focus:bg-white focus:outline-none transition"
+        />
+      </div>
+
+      <!-- Action items -->
+      <div class="flex items-center gap-3">
+        <!-- Order History Trigger -->
+        <button id="ordersBtn" class="text-slate-600 hover:text-slate-900 p-2 text-sm font-medium hidden md:flex items-center gap-1.5 rounded-lg hover:bg-slate-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          <span>Orders (<span id="ordersCount">0</span>)</span>
+        </button>
+
+        <!-- Cart Toggle Trigger -->
+        <button id="cartBtn" class="relative flex items-center gap-2 bg-slate-900 text-white hover:bg-indigo-600 px-4 py-2.5 rounded-full text-sm font-semibold transition shadow-sm active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+          </svg>
+          <span class="hidden sm:inline">Bag</span>
+          <span id="cartCountBadge" class="bg-indigo-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Search Row -->
+    <div class="px-4 pb-3 sm:hidden">
+      <input
+        id="mobileSearchInput"
+        type="search"
+        placeholder="Search products..."
+        class="w-full px-4 py-2 text-sm bg-slate-100 rounded-full border border-transparent focus:border-indigo-500 focus:bg-white focus:outline-none"
+      />
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Hero / Headline -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Curated Living & Hardware</h1>
+        <p class="text-slate-500 mt-1 text-sm sm:text-base">Modern design essentials engineered with architectural precision.</p>
+      </div>
+      <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 bg-slate-100 px-3 py-1.5 rounded-full w-fit">
+        Local Client Store & ACID Checkout
+      </div>
+    </div>
+
+    <!-- Control Bar (Filter tabs & Sort selector) -->
+    <section class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 pb-5 border-b border-slate-200">
+      <div id="categoryChips" class="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none">
+        <!-- Rendered via JS -->
+      </div>
+
+      <div class="flex items-center gap-2 self-end sm:self-auto w-full sm:w-auto justify-end">
+        <label for="sortSelect" class="text-xs text-slate-500 font-medium">Sort by:</label>
+        <select id="sortSelect" class="bg-white border border-slate-200 text-slate-800 text-xs sm:text-sm rounded-lg px-3 py-2 font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+          <option value="featured">Featured Collection</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="rating">Top Rated</option>
+          <option value="stock">In Stock First</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Product Grid View -->
+    <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" aria-live="polite">
+      <!-- Rendered dynamically -->
+    </div>
+  </main>
+
+  <div id="cartOverlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden transition-opacity"></div>
+  <aside id="cartDrawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 transform translate-x-full cart-drawer-transition flex flex-col" aria-modal="true" role="dialog">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <h2 class="text-lg font-bold text-slate-900">Your Shopping Bag</h2>
+        <span id="drawerItemCount" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">0 items</span>
+      </div>
+      <button id="closeCartBtn" class="p-2 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition" aria-label="Close cart">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Scrollable Item List -->
+    <div id="cartItemsList" class="flex-1 overflow-y-auto p-5 space-y-4">
+      <!-- Items dynamically populated -->
+    </div>
+
+    <!-- Drawer Footer / Summary -->
+    <div class="p-5 bg-slate-50 border-t border-slate-100 space-y-3">
+      <div class="flex justify-between text-xs text-slate-500 font-medium">
+        <span>Estimated Shipping</span>
+        <span class="text-emerald-600 font-semibold">Complimentary</span>
+      </div>
+      <div class="flex justify-between text-base font-bold text-slate-900 pt-1 border-t border-slate-200">
+        <span>Total Amount</span>
+        <span id="cartSubtotalDisplay">$0.00</span>
+      </div>
+      <button id="checkoutTriggerBtn" class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-semibold py-3.5 rounded-xl transition shadow active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed">
+        Checkout Now
+      </button>
+      <button id="clearCartBtn" class="w-full text-center text-xs text-slate-400 hover:text-rose-600 transition py-1">
+        Empty Bag
+      </button>
+    </div>
+  </aside>
+
+  <div id="checkoutModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 relative max-h-[90vh] overflow-y-auto">
+      <button id="closeCheckoutModal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="mb-5">
+        <span class="text-xs uppercase font-bold text-indigo-600 tracking-wider">Transactional Commit</span>
+        <h3 class="text-xl font-bold text-slate-900 mt-1">Complete Order & Reserve Stock</h3>
+        <p class="text-xs text-slate-500 mt-1">Locks inventory atomically, validates stock limits, and records order in localStorage.</p>
+      </div>
+
+      <form id="checkoutForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+          <input required type="text" id="custName" value="Alex Vance" class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+          <input required type="email" id="custEmail" value="alex@aura-studio.io" class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Delivery Address</label>
+          <input required type="text" id="custAddress" value="448 Market Street, San Francisco, CA" class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs space-y-1.5">
+          <div class="flex justify-between text-slate-600">
+            <span>Items Subtotal:</span>
+            <span id="modalSubtotal">$0.00</span>
+          </div>
+          <div class="flex justify-between text-slate-600">
+            <span>State Tax (0% Demo):</span>
+            <span>$0.00</span>
+          </div>
+          <div class="flex justify-between font-bold text-slate-900 text-sm pt-2 border-t border-slate-200">
+            <span>Authorized Total:</span>
+            <span id="modalTotal">$0.00</span>
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="button" id="cancelCheckout" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">Cancel</button>
+          <button type="submit" id="submitOrderBtn" class="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow transition">Commit Transaction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="ordersModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6 relative max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center pb-4 border-b border-slate-100">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Your Order History</h3>
+          <p class="text-xs text-slate-500">Persisted locally in window.localStorage</p>
+        </div>
+        <button id="closeOrdersModal" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div id="ordersContainer" class="flex-1 overflow-y-auto py-4 space-y-3">
+        <!-- Rendered via JS -->
+      </div>
+      <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
+        <button id="resetAppStorageBtn" class="text-xs text-rose-500 hover:underline">Reset Demo Data & Catalog</button>
+        <button id="doneOrdersBtn" class="px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-lg">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-16 py-8">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400 space-y-2">
+      <p>Aura Storefront • Built with Vanilla JS, Tailwind CSS & HTML5 LocalStorage</p>
+      <p>Simulated Relational Integrity • Automatic Inventory Lock on Checkout</p>
+    </div>
+  </footer>
+
+  <script>
+    // ==========================================
+    // 1. DEFAULT CATALOG & INITIALIZATION
+    // ==========================================
+    const DEFAULT_CATALOG = [
+      {
+        id: 101,
+        title: "Kanso Ceramic Desk Planter",
+        category: "Home",
+        price: 42.00,
+        rating: 4.8,
+        reviewsCount: 38,
+        stock: 9,
+        image: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=700&q=80",
+        badge: "Eco-Friendly"
+      },
+      {
+        id: 102,
+        title: "Aura Studio Over-Ear Headphones",
+        category: "Audio",
+        price: 249.00,
+        rating: 4.9,
+        reviewsCount: 114,
+        stock: 5,
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=700&q=80",
+        badge: "Best Seller"
+      },
+      {
+        id: 103,
+        title: "Tenkeyless Anodized Keyboard",
+        category: "Tech",
+        price: 135.50,
+        rating: 4.7,
+        reviewsCount: 62,
+        stock: 4,
+        image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=700&q=80",
+        badge: "Hot"
+      },
+      {
+        id: 104,
+        title: "Full-Grain Leather Card Folio",
+        category: "Accessories",
+        price: 55.00,
+        rating: 4.6,
+        reviewsCount: 29,
+        stock: 14,
+        image: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=700&q=80",
+        badge: null
+      },
+      {
+        id: 105,
+        title: "Matte Black Insulated Flask",
+        category: "Accessories",
+        price: 36.00,
+        rating: 4.8,
+        reviewsCount: 88,
+        stock: 20,
+        image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=700&q=80",
+        badge: "Popular"
+      },
+      {
+        id: 106,
+        title: "Walnut & Brass Minimalist Clock",
+        category: "Home",
+        price: 89.00,
+        rating: 4.5,
+        reviewsCount: 21,
+        stock: 3,
+        image: "https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?auto=format&fit=crop&w=700&q=80",
+        badge: "Low Stock"
+      },
+      {
+        id: 107,
+        title: "Architectural Aluminum Desk Lamp",
+        category: "Home",
+        price: 110.00,
+        rating: 4.7,
+        reviewsCount: 47,
+        stock: 6,
+        image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=700&q=80",
+        badge: null
+      },
+      {
+        id: 108,
+        title: "Hi-Res DAC Wireless Transmitter",
+        category: "Audio",
+        price: 165.00,
+        rating: 4.9,
+        reviewsCount: 53,
+        stock: 7,
+        image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=700&q=80",
+        badge: "Editor's Pick"
+      }
+    ];
+
+    const STORAGE_KEYS = {
+      PRODUCTS: "aura_store_products_v1",
+      CART: "aura_store_cart_v1",
+      ORDERS: "aura_store_orders_v1"
+    };
+
+    // Global Reactive State
+    const state = {
+      products: loadStorage(STORAGE_KEYS.PRODUCTS, DEFAULT_CATALOG),
+      cart: loadStorage(STORAGE_KEYS.CART, []),
+      orders: loadStorage(STORAGE_KEYS.ORDERS, []),
+      currentCategory: "All",
+      searchQuery: "",
+      sortBy: "featured"
+    };
+
+    function loadStorage(key, fallback) {
+      try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : fallback;
+      } catch (e) {
+        console.error("Storage parse error", e);
+        return fallback;
+      }
+    }
+
+    function saveStorage(key, val) {
+      try {
+        localStorage.setItem(key, JSON.stringify(val));
+      } catch (e) {
+        console.error("Storage save error", e);
+      }
+    }
+
+    const elements = {
+      grid: document.getElementById("productGrid"),
+      categoryChips: document.getElementById("categoryChips"),
+      desktopSearch: document.getElementById("desktopSearchInput"),
+      mobileSearch: document.getElementById("mobileSearchInput"),
+      sortSelect: document.getElementById("sortSelect"),
+      cartBtn: document.getElementById("cartBtn"),
+      cartBadge: document.getElementById("cartCountBadge"),
+      cartDrawer: document.getElementById("cartDrawer"),
+      cartOverlay: document.getElementById("cartOverlay"),
+      closeCartBtn: document.getElementById("closeCartBtn"),
+      cartItemsList: document.getElementById("cartItemsList"),
+      cartSubtotalDisplay: document.getElementById("cartSubtotalDisplay"),
+      drawerItemCount: document.getElementById("drawerItemCount"),
+      checkoutTriggerBtn: document.getElementById("checkoutTriggerBtn"),
+      clearCartBtn: document.getElementById("clearCartBtn"),
+      toastContainer: document.getElementById("toastContainer"),
+      checkoutModal: document.getElementById("checkoutModal"),
+      closeCheckoutModal: document.getElementById("closeCheckoutModal"),
+      cancelCheckout: document.getElementById("cancelCheckout"),
+      checkoutForm: document.getElementById("checkoutForm"),
+      modalSubtotal: document.getElementById("modalSubtotal"),
+      modalTotal: document.getElementById("modalTotal"),
+      ordersBtn: document.getElementById("ordersBtn"),
+      ordersCount: document.getElementById("ordersCount"),
+      ordersModal: document.getElementById("ordersModal"),
+      closeOrdersModal: document.getElementById("closeOrdersModal"),
+      doneOrdersBtn: document.getElementById("doneOrdersBtn"),
+      ordersContainer: document.getElementById("ordersContainer"),
+      resetAppStorageBtn: document.getElementById("resetAppStorageBtn")
+    };
+
+    function showToast(message, type = "success") {
+      const toast = document.createElement("div");
+      toast.className = `toast-slide flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-xs sm:text-sm font-medium pointer-events-auto ${
+        type === "success" 
+          ? "bg-slate-900 text-white border-slate-700" 
+          : "bg-rose-600 text-white border-rose-700"
+      }`;
+
+      const icon = type === "success"
+        ? `<svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`
+        : `<svg class="w-4 h-4 text-rose-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
+
+      toast.innerHTML = `${icon}<span>${message}</span>`;
+      elements.toastContainer.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function getCategories() {
+      const cats = new Set(state.products.map(p => p.category));
+      return ["All", ...Array.from(cats)];
+    }
+
+    function renderFilterChips() {
+      const categories = getCategories();
+      elements.categoryChips.innerHTML = categories.map(cat => `
+        <button 
+          data-category="${cat}"
+          class="category-btn whitespace-nowrap text-xs font-semibold px-3.5 py-1.5 rounded-full transition ${
+            state.currentCategory === cat
+              ? "bg-slate-900 text-white shadow-sm"
+              : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+          }">
+          ${cat}
+        </button>
+      `).join('');
+    }
+
+    function getFilteredAndSortedProducts() {
+      let result = state.products.filter(item => {
+        const matchesCategory = state.currentCategory === "All" || item.category === state.currentCategory;
+        const matchesSearch = item.title.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+                              item.category.toLowerCase().includes(state.searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+      });
+
+      switch(state.sortBy) {
+        case "price-asc":
+          result.sort((a, b) => a.price - b.price);
+          break;
+        case "price-desc":
+          result.sort((a, b) => b.price - a.price);
+          break;
+        case "rating":
+          result.sort((a, b) => b.rating - a.rating);
+          break;
+        case "stock":
+          result.sort((a, b) => b.stock - a.stock);
+          break;
+        default:
+          result.sort((a, b) => a.id - b.id);
+      }
+      return result;
+    }
+
+    function renderProductGrid() {
+      const items = getFilteredAndSortedProducts();
+
+      if (items.length === 0) {
+        elements.grid.innerHTML = `
+          <div class="col-span-full py-16 text-center">
+            <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400 mb-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <h3 class="text-base font-semibold text-slate-800">No items discovered</h3>
+            <p class="text-xs text-slate-500 mt-1">Try relaxing your search query or choosing another category filter.</p>
+          </div>
+        `;
+        return;
+      }
+
+      elements.grid.innerHTML = items.map(product => {
+        const inCart = state.cart.find(c => c.id === product.id);
+        const cartQty = inCart ? inCart.quantity : 0;
+        const isOutOfStock = product.stock <= 0;
+        const isLowStock = product.stock > 0 && product.stock <= 3;
+
+        return `
+          <div class="group bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col hover:shadow-xl hover:border-slate-300 transition-all duration-300">
+            <div class="relative aspect-square overflow-hidden bg-slate-100">
+              <img 
+                src="${product.image}" 
+                alt="${product.title}" 
+                loading="lazy" 
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                onerror="this.src='https://placehold.co/600x600/f1f5f9/64748b?text=${encodeURIComponent(product.title)}'"
+              />
+              ${product.badge ? `
+                <span class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  ${product.badge}
+                </span>
+              ` : ''}
+
+              <div class="absolute bottom-3 right-3">
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                  isOutOfStock 
+                    ? "bg-rose-100 text-rose-700" 
+                    : isLowStock 
+                    ? "bg-amber-100 text-amber-800" 
+                    : "bg-white/90 text-slate-700 backdrop-blur-sm shadow-sm"
+                }">
+                  ${isOutOfStock ? "Out of Stock" : `${product.stock} available`}
+                </span>
+              </div>
+            </div>
+
+            <div class="p-4 flex-1 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between text-xs text-slate-400 mb-1.5">
+                  <span class="font-medium text-slate-500">${product.category}</span>
+                  <div class="flex items-center text-amber-500">
+                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                    <span class="ml-1 text-slate-700 font-bold">${product.rating}</span>
+                    <span class="text-slate-400 text-[10px] ml-0.5">(${product.reviewsCount})</span>
+                  </div>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition leading-snug">
+                  ${product.title}
+                </h3>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                <div>
+                  <span class="text-xs text-slate-400 block font-normal">Price</span>
+                  <span class="text-base font-extrabold text-slate-900">$${product.price.toFixed(2)}</span>
+                </div>
+                <button
+                  data-action="add-cart"
+                  data-id="${product.id}"
+                  ${isOutOfStock ? "disabled" : ""}
+                  class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-sm ${
+                    isOutOfStock 
+                      ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                      : "bg-slate-900 text-white hover:bg-indigo-600 active:scale-95"
+                  }">
+                  ${cartQty > 0 ? `<span>In Bag (${cartQty})</span>` : `
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Add</span>
+                  `}
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateCartCountUI() {
+      const totalCount = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+      elements.cartBadge.textContent = totalCount;
+      elements.drawerItemCount.textContent = `${totalCount} item${totalCount === 1 ? '' : 's'}`;
+      elements.ordersCount.textContent = state.orders.length;
+
+      // Animate badge
+      elements.cartBadge.classList.remove('badge-pop');
+      void elements.cartBadge.offsetWidth;
+      elements.cartBadge.classList.add('badge-pop');
+    }
+
+    function calculateSubtotal() {
+      return state.cart.reduce((sum, item) => {
+        const prod = state.products.find(p => p.id === item.id);
+        return sum + (prod ? prod.price * item.quantity : 0);
+      }, 0);
+    }
+
+    function renderCartDrawer() {
+      updateCartCountUI();
+      const subtotal = calculateSubtotal();
+      elements.cartSubtotalDisplay.textContent = `$${subtotal.toFixed(2)}`;
+      elements.checkoutTriggerBtn.disabled = state.cart.length === 0;
+
+      if (state.cart.length === 0) {
+        elements.cartItemsList.innerHTML = `
+          <div class="h-full flex flex-col items-center justify-center text-center py-16 text-slate-400">
+            <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-3 text-slate-400">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            </div>
+            <p class="font-bold text-slate-700 text-sm">Your shopping bag is empty</p>
+            <p class="text-xs text-slate-400 mt-1">Explore our curated collections to add items.</p>
+          </div>
+        `;
+        return;
+      }
+
+      elements.cartItemsList.innerHTML = state.cart.map(cartItem => {
+        const product = state.products.find(p => p.id === cartItem.id);
+        if (!product) return '';
+        const itemLineTotal = (product.price * cartItem.quantity).toFixed(2);
+
+        return `
+          <div class="flex gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <img 
+              src="${product.image}" 
+              alt="${product.title}" 
+              class="w-16 h-16 rounded-lg object-cover bg-white shrink-0 border border-slate-100"
+            />
+            <div class="flex-1 flex flex-col justify-between min-w-0">
+              <div class="flex justify-between items-start gap-2">
+                <h4 class="text-xs font-bold text-slate-800 truncate">${product.title}</h4>
+                <button 
+                  data-action="remove-item" 
+                  data-id="${product.id}" 
+                  class="text-slate-400 hover:text-rose-500 transition" 
+                  title="Remove item">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs font-extrabold text-slate-900">$${itemLineTotal}</span>
+                <div class="flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden shadow-xs">
+                  <button 
+                    data-action="decrease-qty" 
+                    data-id="${product.id}" 
+                    class="px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-100 font-bold active:bg-slate-200">
+                    −
+                  </button>
+                  <span class="px-2.5 text-xs font-bold text-slate-800">${cartItem.quantity}</span>
+                  <button 
+                    data-action="increase-qty" 
+                    data-id="${product.id}" 
+                    class="px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-100 font-bold active:bg-slate-200">
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleCart(open) {
+      if (open) {
+        elements.cartDrawer.classList.remove("translate-x-full");
+        elements.cartOverlay.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+      } else {
+        elements.cartDrawer.classList.add("translate-x-full");
+        elements.cartOverlay.classList.add("hidden");
+        document.body.style.overflow = "";
+      }
+    }
+
+    function addToCart(productId) {
+      const product = state.products.find(p => p.id === productId);
+      if (!product) return;
+
+      const existing = state.cart.find(c => c.id === productId);
+      const currentQtyInCart = existing ? existing.quantity : 0;
+
+      if (currentQtyInCart + 1 > product.stock) {
+        showToast(`Cannot add more. Only ${product.stock} in stock!`, "error");
+        return;
+      }
+
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        state.cart.push({ id: productId, quantity: 1 });
+      }
+
+      saveStorage(STORAGE_KEYS.CART, state.cart);
+      renderProductGrid();
+      renderCartDrawer();
+      showToast(`Added "${product.title}" to bag`);
+    }
+
+    function modifyCartQuantity(productId, delta) {
+      const product = state.products.find(p => p.id === productId);
+      const item = state.cart.find(c => c.id === productId);
+      if (!item || !product) return;
+
+      const newQty = item.quantity + delta;
+
+      if (newQty > product.stock) {
+        showToast(`Stock limit reached for ${product.title}`, "error");
+        return;
+      }
+
+      if (newQty <= 0) {
+        state.cart = state.cart.filter(c => c.id !== productId);
+        showToast(`Removed from bag`);
+      } else {
+        item.quantity = newQty;
+      }
+
+      saveStorage(STORAGE_KEYS.CART, state.cart);
+      renderProductGrid();
+      renderCartDrawer();
+    }
+
+    function removeFromCart(productId) {
+      state.cart = state.cart.filter(c => c.id !== productId);
+      saveStorage(STORAGE_KEYS.CART, state.cart);
+      renderProductGrid();
+      renderCartDrawer();
+      showToast("Item removed from bag");
+    }
+
+    function clearCart() {
+      if (state.cart.length === 0) return;
+      state.cart = [];
+      saveStorage(STORAGE_KEYS.CART, state.cart);
+      renderProductGrid();
+      renderCartDrawer();
+      showToast("Shopping bag emptied");
+    }
+
+    function openCheckoutModal() {
+      if (state.cart.length === 0) return;
+      const subtotal = calculateSubtotal();
+      elements.modalSubtotal.textContent = `$${subtotal.toFixed(2)}`;
+      elements.modalTotal.textContent = `$${subtotal.toFixed(2)}`;
+      elements.checkoutModal.classList.remove("hidden");
+    }
+
+    function closeCheckout() {
+      elements.checkoutModal.classList.add("hidden");
+    }
+
+    function executeAtomicOrder(customerInfo) {
+      // 1. Validation & Isolation Lock: Verify ALL products have required stock
+      const inventorySnapshot = JSON.parse(JSON.stringify(state.products));
+      const lineItems = [];
+      let totalAmount = 0;
+
+      for (const cartItem of state.cart) {
+        const prod = inventorySnapshot.find(p => p.id === cartItem.id);
+        if (!prod) {
+          throw new Error(`Catalog discrepancy: item ID ${cartItem.id} missing.`);
+        }
+        if (prod.stock < cartItem.quantity) {
+          throw new Error(`Transaction Rolled Back: Insufficient stock for "${prod.title}". Only ${prod.stock} left.`);
+        }
+        // Decrement snapshot atomically
+        prod.stock -= cartItem.quantity;
+        totalAmount += prod.price * cartItem.quantity;
+        lineItems.push({
+          productId: prod.id,
+          title: prod.title,
+          price: prod.price,
+          quantity: cartItem.quantity
+        });
+      }
+
+      // 2. Commit Step: Write updated catalog and create Order Record
+      const newOrder = {
+        orderId: 'AURA-' + Math.floor(100000 + Math.random() * 900000),
+        date: new Date().toISOString(),
+        customer: customerInfo,
+        items: lineItems,
+        totalAmount: totalAmount,
+        status: 'PAID_AND_COMMITTED'
+      };
+
+      // Persist state updates
+      state.products = inventorySnapshot;
+      state.orders.unshift(newOrder);
+      state.cart = [];
+
+      saveStorage(STORAGE_KEYS.PRODUCTS, state.products);
+      saveStorage(STORAGE_KEYS.ORDERS, state.orders);
+      saveStorage(STORAGE_KEYS.CART, state.cart);
+
+      return newOrder;
+    }
+
+    function renderOrdersHistory() {
+      if (state.orders.length === 0) {
+        elements.ordersContainer.innerHTML = `
+          <div class="text-center py-10 text-slate-400">
+            <p class="text-sm font-semibold">No prior orders recorded.</p>
+            <p class="text-xs mt-1">Complete a purchase checkout to inspect database records.</p>
+          </div>
+        `;
+        return;
+      }
+
+      elements.ordersContainer.innerHTML = state.orders.map(order => `
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-2">
+          <div class="flex justify-between items-center border-b border-slate-200/80 pb-2">
+            <div>
+              <span class="font-bold text-slate-900">${order.orderId}</span>
+              <span class="text-slate-400 ml-2">${new Date(order.date).toLocaleDateString()}</span>
+            </div>
+            <span class="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full text-[10px]">
+              ${order.status}
+            </span>
+          </div>
+
+          <div class="text-slate-600">
+            <span class="font-medium text-slate-700">Buyer:</span> ${order.customer.name} (${order.customer.email})
+          </div>
+
+          <div class="space-y-1">
+            ${order.items.map(i => `
+              <div class="flex justify-between text-slate-500 text-[11px]">
+                <span>${i.quantity}x ${i.title}</span>
+                <span>$${(i.price * i.quantity).toFixed(2)}</span>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="flex justify-between font-bold text-slate-900 pt-1.5 border-t border-slate-200">
+            <span>Total Captured:</span>
+            <span>$${order.totalAmount.toFixed(2)}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderFilterChips();
+      renderProductGrid();
+      renderCartDrawer();
+      updateCartCountUI();
+
+      // Delegated Add to Cart on Products Grid
+      elements.grid.addEventListener("click", (e) => {
+        const btn = e.target.closest('[data-action="add-cart"]');
+        if (btn) {
+          const id = parseInt(btn.dataset.id, 10);
+          addToCart(id);
+        }
+      });
+
+      // Delegated Actions in Cart Drawer
+      elements.cartItemsList.addEventListener("click", (e) => {
+        const target = e.target.closest("button");
+        if (!target) return;
+        const action = target.dataset.action;
+        const id = parseInt(target.dataset.id, 10);
+
+        if (action === "increase-qty") modifyCartQuantity(id, 1);
+        if (action === "decrease-qty") modifyCartQuantity(id, -1);
+        if (action === "remove-item") removeFromCart(id);
+      });
+
+      // Filter chips selection
+      elements.categoryChips.addEventListener("click", (e) => {
+        const btn = e.target.closest(".category-btn");
+        if (btn) {
+          state.currentCategory = btn.dataset.category;
+          renderFilterChips();
+          renderProductGrid();
+        }
+      });
+
+      // Search Inputs (debounced)
+      let searchTimer;
+      const handleSearch = (e) => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          state.searchQuery = e.target.value.trim();
+          elements.desktopSearch.value = state.searchQuery;
+          elements.mobileSearch.value = state.searchQuery;
+          renderProductGrid();
+        }, 150);
+      };
+      elements.desktopSearch.addEventListener("input", handleSearch);
+      elements.mobileSearch.addEventListener("input", handleSearch);
+
+      // Sort Select
+      elements.sortSelect.addEventListener("change", (e) => {
+        state.sortBy = e.target.value;
+        renderProductGrid();
+      });
+
+      // Drawer Open/Close
+      elements.cartBtn.addEventListener("click", () => toggleCart(true));
+      elements.closeCartBtn.addEventListener("click", () => toggleCart(false));
+      elements.cartOverlay.addEventListener("click", () => toggleCart(false));
+      elements.clearCartBtn.addEventListener("click", clearCart);
+
+      // Checkout Triggers
+      elements.checkoutTriggerBtn.addEventListener("click", () => {
+        toggleCart(false);
+        openCheckoutModal();
+      });
+      elements.closeCheckoutModal.addEventListener("click", closeCheckout);
+      elements.cancelCheckout.addEventListener("click", closeCheckout);
+
+      // Checkout Commit Form Submission
+      elements.checkoutForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        try {
+          const customer = {
+            name: document.getElementById("custName").value.trim(),
+            email: document.getElementById("custEmail").value.trim(),
+            address: document.getElementById("custAddress").value.trim()
+          };
+          const order = executeAtomicOrder(customer);
+          closeCheckout();
+          renderProductGrid();
+          renderCartDrawer();
+          showToast(`Order ${order.orderId} committed! Inventory updated.`, "success");
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+
+      // Orders View
+      elements.ordersBtn.addEventListener("click", () => {
+        renderOrdersHistory();
+        elements.ordersModal.classList.remove("hidden");
+      });
+      elements.closeOrdersModal.addEventListener("click", () => elements.ordersModal.classList.add("hidden"));
+      elements.doneOrdersBtn.addEventListener("click", () => elements.ordersModal.classList.add("hidden"));
+
+      // Factory Reset Button
+      elements.resetAppStorageBtn.addEventListener("click", () => {
+        localStorage.removeItem(STORAGE_KEYS.PRODUCTS);
+        localStorage.removeItem(STORAGE_KEYS.CART);
+        localStorage.removeItem(STORAGE_KEYS.ORDERS);
+        state.products = [...DEFAULT_CATALOG];
+        state.cart = [];
+        state.orders = [];
+        saveStorage(STORAGE_KEYS.PRODUCTS, state.products);
+        renderFilterChips();
+        renderProductGrid();
+        renderCartDrawer();
+        renderOrdersHistory();
+        elements.ordersModal.classList.add("hidden");
+        showToast("Catalog & storage reset to initial state");
+      });
+    });
+  </script>
+</body>
+</html>
