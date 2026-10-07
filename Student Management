@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Management System</title>
+  <style>
+    /* Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f9;
+      color: #333;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: #2c3e50;
+      padding: 15px 30px;
+      color: white;
+      text-align: center;
+    }
+    .brand { font-size: 22px; font-weight: bold; }
+
+    /* Container */
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin: 30px auto;
+      max-width: 1000px;
+      justify-content: center;
+    }
+
+    /* Cards */
+    .form-card, .list-card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      flex: 1;
+      min-width: 300px;
+    }
+
+    /* Form */
+    form { display: flex; flex-direction: column; gap: 10px; }
+    input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px;
+      background: #2980b9;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover { background: #3498db; }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background: #2980b9;
+      color: white;
+    }
+    .action-btn {
+      padding: 5px 10px;
+      margin: 2px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .edit { background: #f39c12; color: white; }
+    .delete { background: #e74c3c; color: white; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <h1 class="brand">Student Management System</h1>
+  </nav>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Form Section -->
+    <div class="form-card">
+      <h2>Add Student</h2>
+      <form id="studentForm">
+        <input type="text" id="name" placeholder="Full Name" required>
+        <input type="number" id="age" placeholder="Age" required>
+        <input type="text" id="course" placeholder="Course" required>
+        <button type="submit">Add Student</button>
+      </form>
+    </div>
+
+    <!-- Student List Section -->
+    <div class="list-card">
+      <h2>Student List</h2>
+      <table id="studentTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Course</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Students will be dynamically added here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Load students from localStorage
+    let students = JSON.parse(localStorage.getItem("students")) || [];
+
+    const studentForm = document.getElementById("studentForm");
+    const studentTable = document.querySelector("#studentTable tbody");
+
+    // Render Students
+    function renderStudents() {
+      studentTable.innerHTML = "";
+      students.forEach((student, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${student.name}</td>
+          <td>${student.age}</td>
+          <td>${student.course}</td>
+          <td>
+            <button class="action-btn edit" onclick="editStudent(${index})">Edit</button>
+            <button class="action-btn delete" onclick="deleteStudent(${index})">Delete</button>
+          </td>
+        `;
+        studentTable.appendChild(row);
+      });
+    }
+
+    // Add Student
+    studentForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const age = document.getElementById("age").value;
+      const course = document.getElementById("course").value;
+
+      students.push({ name, age, course });
+      localStorage.setItem("students", JSON.stringify(students));
+      renderStudents();
+      studentForm.reset();
+    });
+
+    // Edit Student
+    function editStudent(index) {
+      const student = students[index];
+      document.getElementById("name").value = student.name;
+      document.getElementById("age").value = student.age;
+      document.getElementById("course").value = student.course;
+      students.splice(index, 1); // remove old entry
+      localStorage.setItem("students", JSON.stringify(students));
+      renderStudents();
+    }
+
+    // Delete Student
+    function deleteStudent(index) {
+      students.splice(index, 1);
+      localStorage.setItem("students", JSON.stringify(students));
+      renderStudents();
+    }
+
+    // Initial Render
+    renderStudents();
+  </script>
+</body>
+</html>
